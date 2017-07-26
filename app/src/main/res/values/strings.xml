@@ -1,0 +1,14 @@
+
+<resources>
+    <string name="app_name">Chat</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Login</string>
+    <string name="login">Choose a username:</string>
+    <string name="username">Username</string>
+    <string name="login_submit">Join the Chat!</string>
+
+    <string name="enter_new_channel">Enter new channel:</string>
+    <string name="send_message">Send a message…</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="here_now">Here Now:</string>
+</resources>
