@@ -1,66 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    >
 
-    <data class="MainActivityBinding" />
+  <data class="MainActivityBinding" />
 
-    <RelativeLayout
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:windowSoftInputMode="adjustPan"
+      tools:context=".activities.MainActivity"
+      >
+
+    <Button
+        android:id="@+id/channel_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:onClick="changeChannel"
+        android:text="Channel"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        style="@style/AppTheme.ChannelBar"
+        />
+
+    <ListView
+        android:id="@+id/chatList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:windowSoftInputMode="adjustPan"
-        tools:context=".activities.MainActivity">
+        android:layout_above="@+id/msg_box"
+        android:layout_below="@id/channel_bar"
+        android:transcriptMode="alwaysScroll"
+        />
 
-        <Button
-            android:id="@+id/channel_bar"
-            style="@style/AppTheme.ChannelBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:onClick="changeChannel"
-            android:text="Channel"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_above="@+id/msg_box"
+        android:background="@drawable/light_fade_up"
+        />
 
-        <ListView
-            android:id="@+id/chatList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/msg_box"
-            android:layout_below="@id/channel_bar"
-            android:transcriptMode="alwaysScroll" />
+    <LinearLayout
+        android:id="@+id/msg_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        style="@style/AppTheme.MessageBar"
+        >
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:layout_above="@+id/msg_box"
-            android:background="@drawable/light_fade_up" />
+      <EditText
+          android:id="@+id/EditTextMessage"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:layout_marginLeft="5dp"
+          android:layout_marginRight="5dp"
+          android:layout_marginStart="5dp"
+          android:layout_weight="4"
+          android:hint="@string/send_message"
+          />
 
-        <LinearLayout
-            android:id="@+id/msg_box"
-            style="@style/AppTheme.MessageBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true">
+      <Button
+          android:id="@+id/btnSendMessage"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:background="@color/pn_blue"
+          android:text="send"
+          android:textColor="@color/colorWhite"
+          />
 
-            <EditText
-                android:id="@+id/EditTextMessage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_weight="4"
-                android:hint="@string/send_message" />
-
-            <Button
-                android:id="@+id/btnSendMessage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@color/pn_blue"
-                android:text="send"
-                android:textColor="@color/white" />
-
-        </LinearLayout>
-    </RelativeLayout>
+    </LinearLayout>
+  </RelativeLayout>
 </layout>
