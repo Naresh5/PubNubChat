@@ -6,10 +6,8 @@ import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,37 +17,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
-
-import naresh.com.chat.MyApplication;
-import naresh.com.chat.broadcast.ConnectivityReceiver;
-import naresh.com.chat.utils.Utility;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import naresh.com.chat.MyApplication;
 import naresh.com.chat.R;
 import naresh.com.chat.adapter.ChatAdapter;
+import naresh.com.chat.broadcast.ConnectivityReceiver;
 import naresh.com.chat.callbacks.BasicCallback;
 import naresh.com.chat.databinding.MainActivityBinding;
 import naresh.com.chat.pojo.ChatMessage;
 import naresh.com.chat.utils.Constants;
-
-import static android.widget.Toast.LENGTH_LONG;
+import naresh.com.chat.utils.Utility;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
     implements ConnectivityReceiver.ConnectivityReceiverListener {
