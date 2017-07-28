@@ -42,7 +42,6 @@
 
     </RelativeLayout>
 
-
     <TextView
         android:id="@+id/chat_message"
         android:layout_width="match_parent"
