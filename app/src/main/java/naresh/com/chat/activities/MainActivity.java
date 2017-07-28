@@ -267,8 +267,6 @@ public class MainActivity extends AppCompatActivity {
      * Get state information. Information is deleted when user unsubscribes from channel
      * so display a user not online message if there is no UUID data attached to the
      * channel's state
-     *
-     * @param user
      */
     public void getStateLogin(final String user) {
         Callback callback = new Callback() {
@@ -502,8 +500,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Create an alert dialog with a list of users who are here now.
      * When a user's name is clicked, get their state information and display it with Toast.
-     *
-     * @param userSet
      */
     private void alertHereNow(Set<String> userSet) {
         List<String> users = new ArrayList<String>(userSet);
@@ -531,8 +527,6 @@ public class MainActivity extends AppCompatActivity {
      * Create an alert dialog with a text view to enter a new channel to join. If the channel is
      * not empty, unsubscribe from the current channel and join the new one.
      * Then, get messages from history and update the channelView which displays current channel.
-     *
-     * @param view
      */
     public void changeChannel(View view) {
         LayoutInflater li = LayoutInflater.from(this);
@@ -571,11 +565,6 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    /**
-     * GCM Functionality.
-     * In order to use GCM Push notifications you need an API key and a Sender ID.
-     * Get your key and ID at - https://developers.google.com/cloud-messaging/
-     */
 
 
 }
