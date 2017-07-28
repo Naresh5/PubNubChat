@@ -131,7 +131,6 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
   /**
    * Handle users. Fill the onlineNow set with current users. Data is used to display a green dot
    * next to users who are currently online.
-   *
    * @param user UUID of the user online.
    * @param action The presence action
    */
@@ -166,9 +165,6 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
     return formatter.format(calendar.getTime());
   }
 
-  /**
-   * Clear all values from the values array and update the listview. Used when changing rooms.
-   */
   public void clearMessages() {
     this.values.clear();
     notifyDataSetChanged();

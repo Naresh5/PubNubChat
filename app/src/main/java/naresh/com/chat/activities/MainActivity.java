@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.databinding.DataBindingUtil;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pubnub.api.Callback;
@@ -26,6 +29,9 @@ import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
+import naresh.com.chat.MyApplication;
+import naresh.com.chat.broadcast.ConnectivityReceiver;
+import naresh.com.chat.utils.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +49,10 @@ import naresh.com.chat.databinding.MainActivityBinding;
 import naresh.com.chat.pojo.ChatMessage;
 import naresh.com.chat.utils.Constants;
 
-public class MainActivity extends AppCompatActivity {
+import static android.widget.Toast.LENGTH_LONG;
+
+public class MainActivity extends AppCompatActivity
+    implements ConnectivityReceiver.ConnectivityReceiverListener {
 
   private String TAG = MainActivity.class.getSimpleName();
   private MainActivityBinding mMainActivityBinding;
@@ -54,11 +63,18 @@ public class MainActivity extends AppCompatActivity {
   private SharedPreferences mSharedPrefs;
   private String username;
   private String channel = "MainChat";
+  private boolean isNetworkAvailable = false;
+  private MyApplication mMyApplication;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mMainActivityBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+    checkConnection();
+
+    //isNetworkAvailable = Utility.isNetworkAvailable();
+    Log.e(TAG, "onCreate: " + isNetworkAvailable);
 
     mSharedPrefs = getSharedPreferences(Constants.CHAT_PREFS, MODE_PRIVATE);
     if (!mSharedPrefs.contains(Constants.CHAT_USERNAME)) {
@@ -77,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     this.username = mSharedPrefs.getString(Constants.CHAT_USERNAME, "Anonymous");
-    //    this.mListView = getListView();
+
     this.mListView = mMainActivityBinding.chatList;
     this.mChatAdapter = new ChatAdapter(this, new ArrayList<ChatMessage>(), username);
     this.mChatAdapter.userPresence(this.username,
@@ -112,12 +128,8 @@ public class MainActivity extends AppCompatActivity {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
 
-    //noinspection SimplifiableIfStatement
     switch (id) {
       case R.id.action_here_now:
         hereNow(true);
@@ -336,6 +348,24 @@ public class MainActivity extends AppCompatActivity {
         hereNow(false);
         setStateLogin();
       }
+
+      @Override
+      public void reconnectCallback(String s, Object o) {
+        super.reconnectCallback(s, o);
+        mPubNub.unsubscribeAll();
+        SharedPreferences.Editor edit = mSharedPrefs.edit();
+        edit.remove(Constants.CHAT_USERNAME);
+        edit.apply();
+      }
+
+      @Override
+      public void disconnectCallback(String s, Object o) {
+        super.disconnectCallback(s, o);
+        mPubNub.unsubscribeAll();
+        SharedPreferences.Editor edit = mSharedPrefs.edit();
+        edit.remove(Constants.CHAT_USERNAME);
+        edit.apply();
+      }
     };
     try {
       mPubNub.subscribe(this.channel, subscribeCallback);
@@ -477,8 +507,6 @@ public class MainActivity extends AppCompatActivity {
 
   /**
    * Publish message to current channel.
-   *
-   * @param view The 'SEND' Button which is clicked to trigger a sendMessage call.
    */
   public void sendMessage(View view) {
     String message = mMainActivityBinding.EditTextMessage.getText().toString();
@@ -524,12 +552,73 @@ public class MainActivity extends AppCompatActivity {
     alertDialog.show();
   }
 
+
+
+
+  /*
+  //INTERNET CONNECTIVITY
+
+   */
+
+  // Method to manually check connection status
+
+  private void checkConnection() {
+    boolean isConnected = ConnectivityReceiver.isConnected();
+    showSnack(isConnected);
+  }
+
+  // Showing the status in Snackbar
+  private void showSnack(boolean isConnected) {
+    String message;
+    int color;
+    if (isConnected) {
+      message = "Good! Connected to Internet";
+      Utility.showSnackBar(mMainActivityBinding.getRoot(), R.string.internet_connected);
+      Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+      color = Color.WHITE;
+    } else {
+      message = "Sorry! Not connected to internet";
+      Utility.showSnackBar(mMainActivityBinding.getRoot(), R.string.internet_not_connected);
+      Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+      color = Color.RED;
+    }
+
+    //Utility.showSnackBar(mMainActivityBinding.getRoot(), message);
+
+    /*
+    Snackbar snackbar = Snackbar.make(), message, Snackbar.LENGTH_LONG);
+    View sbView = snackbar.getView();
+    TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+    textView.setTextColor(color);
+    snackbar.show();
+    */
+
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+
+    // register connection status listener
+    MyApplication.getInstance().setConnectivityListener(this);
+  }
+
+  /**
+   * Callback will be triggered when there is change in
+   * network connection
+   */
+  @Override
+  public void onNetworkConnectionChanged(boolean isConnected) {
+    showSnack(isConnected);
+  }
+
   /**
    * Create an alert dialog with a text view to enter a new channel to join. If the channel is
    * not empty, unsubscribe from the current channel and join the new one.
    * Then, get messages from history and update the channelView which displays current channel.
    */
-  public void changeChannel(View view) {
+
+ /* public void changeChannel(View view) {
     LayoutInflater li = LayoutInflater.from(this);
     View promptsView = li.inflate(R.layout.channel_change, null);
 
@@ -561,5 +650,5 @@ public class MainActivity extends AppCompatActivity {
         });
     AlertDialog alertDialog = alertDialogBuilder.create();
     alertDialog.show();
-  }
+  }*/
 }
