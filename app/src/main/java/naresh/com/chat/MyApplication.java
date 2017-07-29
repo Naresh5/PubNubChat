@@ -1,6 +1,7 @@
 package naresh.com.chat;
 
 import android.app.Application;
+
 import naresh.com.chat.broadcast.ConnectivityReceiver;
 
 /**
@@ -9,21 +10,21 @@ import naresh.com.chat.broadcast.ConnectivityReceiver;
 
 public class MyApplication extends Application {
 
-  private static MyApplication mInstance;
+    private static MyApplication mInstance;
 
-  @Override
-  public void onCreate() {
-    super.onCreate();
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-    mInstance = this;
-  }
+        mInstance = this;
+    }
 
-  public static synchronized MyApplication getInstance() {
-    return mInstance;
-  }
+    public static synchronized MyApplication getInstance() {
+        return mInstance;
+    }
 
-  public void setConnectivityListener(ConnectivityReceiver.ConnectivityReceiverListener listener) {
-    ConnectivityReceiver.connectivityReceiverListener = listener;
-  }
+    public void setConnectivityListener(ConnectivityReceiver.ConnectivityReceiverListener listener) {
+        ConnectivityReceiver.connectivityReceiverListener = listener;
+    }
 
 }
