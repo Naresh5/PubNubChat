@@ -1,16 +1,19 @@
 <resources>
-  <string name="app_name">Chat</string>
-  <string name="action_settings">Settings</string>
-  <string name="title_activity_login">Login</string>
-  <string name="login">Choose a username:</string>
-  <string name="username">Username</string>
-  <string name="login_submit">Join the Chat!</string>
+    <string name="app_name">Chat</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_login">Login</string>
+    <string name="login">Choose a username:</string>
+    <string name="username">Username</string>
+    <string name="login_submit">Join the Chat!</string>
 
-  <string name="enter_new_channel">Enter new channel:</string>
-  <string name="send_message">Send a message…</string>
-  <string name="action_sign_out">Sign Out</string>
-  <string name="here_now">Here Now:</string>
-  <string name="internet_not_connected">Sorry! Not connected to internet</string>
-  <string name="internet_connected">Good! Connected to Internet</string>
+    <string name="enter_new_channel">Enter new channel:</string>
+    <string name="send_message">Send a message…</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="here_now">Here Now:</string>
+    <string name="internet_not_connected">Looks like you have an unstable network at the moment, please try again when network stabilizes. </string>
+    <string name="internet_connected">Connected to Internet…!</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="msg_no_internet">It seems like you are not connected to Internet, thus you would no longer able to get new messages. </string>
 
 </resources>
