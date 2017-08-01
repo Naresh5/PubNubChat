@@ -14,6 +14,7 @@
     <string name="internet_connected">Connected to Internet…!</string>
     <string name="btn_ok">OK</string>
     <string name="btn_cancel">Cancel</string>
+    <string name="string_you">You</string>
     <string name="msg_no_internet">It seems like you are not connected to Internet, thus you would no longer able to get new messages. </string>
 
 </resources>

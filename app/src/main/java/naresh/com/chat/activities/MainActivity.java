@@ -40,13 +40,10 @@ import naresh.com.chat.callbacks.BasicCallback;
 import naresh.com.chat.databinding.MainActivityBinding;
 import naresh.com.chat.pojo.ChatMessage;
 import naresh.com.chat.utils.Constants;
-import naresh.com.chat.utils.Utility;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends AppCompatActivity
         implements ConnectivityReceiver.ConnectivityReceiverListener {
@@ -60,13 +57,16 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences mSharedPrefs;
     private String username;
     private String channel = "MainChat";
+    private boolean isInternetConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mMainActivityBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
+
         checkConnection();
+
 
         mSharedPrefs = getSharedPreferences(Constants.CHAT_PREFS, MODE_PRIVATE);
         if (!mSharedPrefs.contains(Constants.CHAT_USERNAME)) {
@@ -141,11 +141,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Might want to unsubscribe from PubNub here and create background service to listen while
+     * unsubscribe from PubNub here and create background service to listen while
      * app is not in foreground.
-     * PubNub will stop subscribing when screen is turned off for this demo, messages will be loaded
-     * when app is opened through a call to history.
-     * The best practice would be creating a background service in onStop to handle messages.
      */
     @Override
     protected void onStop() {
@@ -169,25 +166,39 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * I remove the PubNub object in onDestroy since turning the screen off triggers onStop and
-     * I wanted PubNub to receive messages while the screen is off.
+     * remove the PubNub object in onDestroy since turning the screen off triggers onStop and
+     * if we wanted PubNub to receive messages while the screen is off.
      */
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.e(TAG, "onDestroy: ");
     }
 
     /**
      * Instantiate PubNub object with username as UUID
      * Then subscribe to the current channel with presence.
-     * Finally, populate the listview with past messages from history
      */
     private void initPubNub() {
         this.mPubNub = new Pubnub(Constants.PUBLISH_KEY, Constants.SUBSCRIBE_KEY);
         this.mPubNub.setUUID(this.username);
+        this.mPubNub.setHeartbeat(7, new Callback() {
+            @Override
+            public void successCallback(String s, Object response) {
+                super.successCallback(s, response);
+                Log.e(TAG, " Heartbeat setup successCallback: " + response);
+                Log.e(TAG, "successCallback s ==> : " + s);
+            }
+
+            @Override
+            public void disconnectCallback(String s, Object o) {
+                super.disconnectCallback(s, o);
+                Log.e(TAG, "init Pubnub disconnectCallback: ");
+            }
+        });
+        Log.e(TAG, "initPubNub: pubnub initialized !! ");
         subscribeWithPresence();
         history();
-        //   gcmRegister();
     }
 
     /**
@@ -221,7 +232,7 @@ public class MainActivity extends AppCompatActivity
                     JSONObject json = (JSONObject) response;
                     final int occ = json.getInt("occupancy");
                     final JSONArray hereNowJSON = json.getJSONArray("uuids");
-                    Log.d("JSON_RESP", "Here Now: " + json.toString());
+                    Log.e(TAG, "Here Now SuccessCallback: " + json.toString());
                     final Set<String> usersOnline = new HashSet<String>();
                     usersOnline.add(username);
                     for (int i = 0; i < hereNowJSON.length(); i++) {
@@ -230,8 +241,11 @@ public class MainActivity extends AppCompatActivity
                     MainActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (mHereNow != null) mHereNow.setTitle(String.valueOf(occ));
-                            mChatAdapter.setOnlineNow(usersOnline);
+                            if (isInternetConnected) {
+                                if (mHereNow != null) mHereNow.setTitle(String.valueOf(occ));
+                                mChatAdapter.setOnlineNow(usersOnline);
+                            }
+
                             // if (displayUsers)
                             //     alertHereNow(usersOnline);
                         }
@@ -331,16 +345,27 @@ public class MainActivity extends AppCompatActivity
                         e.printStackTrace();
                     }
                 }
-                Log.d("PUBNUB", "Channel: " + channel + " Msg: " + message.toString());
+                Log.e(TAG, "subscribeWithPresence SuccessCallback: " + " Msg: " + message.toString());
             }
 
             @Override
             public void connectCallback(String channel, Object message) {
-                Log.d("Subscribe", "Connected! " + message.toString());
+                Log.e(TAG, "subscribeWithPresence on Connected successCallback! " + message.toString());
                 hereNow(false);
                 setStateLogin();
             }
 
+            @Override
+            public void disconnectCallback(String Channel, Object message) {
+                super.disconnectCallback(channel, message);
+                Log.d(TAG, "subscribeWithPresence on disConnected successCallback! " + message.toString());
+            }
+
+            @Override
+            public void reconnectCallback(String Channel, Object message) {
+                super.reconnectCallback(channel, message);
+                Log.d(TAG, "subscribeWithPresence on reConnected successCallback! " + message.toString());
+            }
         };
         try {
             mPubNub.subscribe(this.channel, subscribeCallback);
@@ -360,20 +385,39 @@ public class MainActivity extends AppCompatActivity
         Callback callback = new Callback() {
             @Override
             public void successCallback(String channel, Object response) {
-                Log.i("PN-pres",
-                        "Pres: " + response.toString() + " class: " + response.getClass().toString());
+                //    Log.e("PN-pres",
+                //            "Pres: " + response.toString() + " class: " + response.getClass().toString());
                 if (response instanceof JSONObject) {
                     JSONObject json = (JSONObject) response;
-                    Log.d("PN-main", "Presence: " + json.toString());
+                    //    Log.d("PN-main", "Presence: " + json.toString());
+
+                    Log.e(TAG, "User Presence successCallback: " + response);
+                    //    Log.e(TAG, "Presence successCallback " + json.toString() );
+
                     try {
                         final int occ = json.getInt("occupancy");
                         final String user = json.getString("uuid");
                         final String action = json.getString("action");
+
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 mChatAdapter.userPresence(user, action);
-                                mHereNow.setTitle(String.valueOf(occ));
+                                if (isInternetConnected) {
+                                    mHereNow.setTitle(String.valueOf(occ));
+                                }
+
+
+                                if (action.equals("timeout") || (action.equals("leave"))) ;
+                                {
+                                    Log.e(TAG, "show user  as action " + action + " :: " + user);
+                                    Log.e(TAG, "onCreate: My user name" + username);
+                                    if (isInternetConnected) {
+                                        mChatAdapter.removeGreenDot();
+
+                                    }
+                                }
+
                             }
                         });
                     } catch (JSONException e) {
@@ -384,7 +428,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void errorCallback(String channel, PubnubError error) {
-                Log.d("Presence", "Error: " + error.toString());
+                Log.e(TAG, "Presence ErrorCallback: " + error.toString());
             }
         };
         try {
@@ -406,7 +450,7 @@ public class MainActivity extends AppCompatActivity
             public void successCallback(String channel, final Object message) {
                 try {
                     JSONArray json = (JSONArray) message;
-                    Log.d("History", json.toString());
+                    Log.d(TAG, "History SuccessCallback : " + json.toString());
                     final JSONArray messages = json.getJSONArray(0);
                     final List<ChatMessage> chatMsgs = new ArrayList<ChatMessage>();
                     for (int i = 0; i < messages.length(); i++) {
@@ -524,7 +568,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String user = hnAdapter.getItem(which);
-                getStateLogin(user);
+                //getStateLogin(user);
             }
         });
         alertDialog.show();
@@ -534,8 +578,9 @@ public class MainActivity extends AppCompatActivity
     // Method to manually check connection status
 
     private void checkConnection() {
-        boolean isConnected = ConnectivityReceiver.isConnected();
-        showSnack(isConnected);
+        isInternetConnected = ConnectivityReceiver.isConnected();
+        Log.e(TAG, "Internet connection: " + isInternetConnected);
+        showSnack(isInternetConnected);
     }
 
     // Showing the status in Snackbar
@@ -545,6 +590,9 @@ public class MainActivity extends AppCompatActivity
         if (isConnected) {
             message = "Good! Connected to Internet";
             color = Color.WHITE;
+            Log.e(TAG, "Internet connection:  ok");
+
+            //        mChatAdapter.removeGreenDot();
         } else {
             message = getResources().getString(R.string.internet_not_connected);
             textColor = Color.RED;
@@ -556,9 +604,8 @@ public class MainActivity extends AppCompatActivity
             textView.setTextColor(textColor);
             textView.setBackgroundColor(color);
             snackbar.show();
+            Log.e(TAG, "Internet connection: " + false);
         }
-
-
     }
 
     @Override
@@ -575,6 +622,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
         showSnack(isConnected);
+        if (isConnected) {
+            history();
+            hereNow(true);
+        } else {
+            mHereNow.setTitle(String.valueOf(0));
+        }
+        //    if (!isInternetConnected) mChatAdapter.removeGreenDot();
     }
 
     /**
